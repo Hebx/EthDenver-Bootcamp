@@ -2,11 +2,13 @@
 
 pragma solidity ^0.8.0;
 
-error NeedsOwner();
+import "@openzeppelin/contracts/access/Ownable.sol";
+
+// error NeedsOwner();
 error TransferFailed();
 error NotAllowed();
 
-contract VolcanoCoin {
+contract VolcanoCoin is Ownable {
     uint256 private totalSupply = 10000;
     address private owner;
     mapping(address => uint256) private balances;
@@ -20,12 +22,12 @@ contract VolcanoCoin {
         address recipient;
     }
 
-    modifier onlyOwner() {
-        if (msg.sender != owner) {
-            revert NeedsOwner();
-        }
-        _;
-    }
+    // modifier onlyOwner() {
+    //     if (msg.sender != owner) {
+    //         revert NeedsOwner();
+    //     }
+    //     _;
+    // }
 
     constructor() {
         owner = msg.sender;
