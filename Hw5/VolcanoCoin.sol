@@ -1,9 +1,15 @@
 // SPDX-License-Identifier: UNLICENSED
+
 pragma solidity ^0.8.0;
 
-contract VolcanoCoin {
+import "@openzeppelin/contracts/access/Ownable.sol";
+
+error NotEnough();
+error NotAllowed();
+
+contract VolcanoCoin is Ownable {
     uint256 private totalSupply = 10000;
-    address private owner;
+    address private _owner;
     mapping(address => uint256) private balances;
     mapping(address => Payment[]) private transfers;
 
@@ -15,28 +21,24 @@ contract VolcanoCoin {
         address recipient;
     }
 
-    modifier onlyOwner() {
-		require(msg.sender == owner, "Not Owner");
-		_;
-    }
     constructor() {
-        owner = msg.sender;
-        balances[owner] = totalSupply;
+        _owner = msg.sender;
+        balances[msg.sender] = totalSupply;
     }
 
     function mint() public onlyOwner {
         totalSupply += 1000;
-        balances[owner] += 1000;
+        balances[_owner] += 1000;
         emit Mint(totalSupply);
     }
 
     function getAccountBalance(address _account) public view returns (uint256){
-        require(msg.sender == _account, "Not Allowed");
+        if (msg.sender != _account) revert NotAllowed();
         return balances[_account];
     }
 
     function getAccountTransfers(address _account) public view returns (Payment[] memory){
-        require(msg.sender == _account, "Not Allowed");
+        if (msg.sender != _account) revert NotAllowed();
         return transfers[_account];
     }
 
@@ -45,7 +47,9 @@ contract VolcanoCoin {
     }
 
     function transfer(uint256 _amount, address _recipient) public {
-        require(_amount <= balances[msg.sender], "Not Enough");
+        if (_amount > balances[msg.sender]) {
+            revert NotEnough();
+        }
         balances[msg.sender] -= _amount;
         balances[_recipient] += _amount;
         transfers[msg.sender].push(Payment(_amount, _recipient));
